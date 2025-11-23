@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify Overlay</title>
+    <style>
+        html, body {
+            margin: 0;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            font-family: sans-serif;
+            background: transparent;
+            color: white;
+            box-sizing: border-box;
+        }
+
+        *, *::before, *::after {
+            box-sizing: inherit;
+        }
+
+        #overlay {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            height: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        #album {
+            flex-shrink: 0;
+            aspect-ratio: 1 / 1;
+            height: 100%;
+        }
+
+        #album img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        #track-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        #title {
+            font-weight: bold;
+            font-size: 20px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        #artist {
+            font-size: 18px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        #progress-container {
+            width: 100%;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            margin-top: 5px;
+        }
+
+        #progress-bar {
+            height: 100%;
+            width: 0;
+        }
+    </style>
+</head>
+<body>
+<div id="overlay">
+    <div id="album">
+        <img id="album-art" alt="Album Art" style="display: none" src=""/>
+    </div>
+    <div id="track-info">
+        <div id="title">—</div>
+        <div id="artist">—</div>
+        <div id="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const albumArt = document.getElementById('album-art');
+    const titleEl = document.getElementById('title');
+    const artistEl = document.getElementById('artist');
+    const progressBar = document.getElementById('progress-bar');
+
+    let POLL_INTERVAL = 3000;
+    let overlayBgColor = 'transparent';
+    let textColor = 'white';
+    let progressBarColor = '#1DB954';
+
+    async function fetchConfig() {
+        try {
+            const res = await fetch('/config');
+            const data = await res.json();
+            POLL_INTERVAL = data.pollInterval || 1000;
+            overlayBgColor = data.overlayBgColor || overlayBgColor;
+            textColor = data.textColor || textColor;
+            progressBarColor = data.progressBarColor || progressBarColor;
+
+            document.body.style.background = overlayBgColor;
+            document.body.style.color = textColor;
+            progressBar.style.background = progressBarColor;
+        } catch (err) {
+            console.warn("Error fetching config, using defaults:", err);
+        }
+    }
+
+    async function updateOverlay() {
+        try {
+            const res = await fetch('/current');
+            const data = await res.json();
+
+            titleEl.textContent = data.title || "—";
+            artistEl.textContent = data.artist || "—";
+
+            if (data.albumArt) {
+                albumArt.src = data.albumArt
+                albumArt.style.display = 'block'
+            } else {
+                albumArt.style.display = 'none'
+            }
+
+            if (data.durationMs && data.progressMs != null) {
+                const progressPercent = (data.progressMs / data.durationMs) * 100;
+                progressBar.style.width = progressPercent + "%";
+            } else {
+                progressBar.style.width = "0%";
+            }
+        } catch (err) {
+            console.error("Error fetching Spotify data:", err);
+        }
+    }
+
+    async function startOverlay() {
+        await fetchConfig();
+        await updateOverlay();
+        setInterval(updateOverlay, POLL_INTERVAL);
+    }
+
+    startOverlay();
+</script>
+</body>
+</html>

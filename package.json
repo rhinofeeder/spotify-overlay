@@ -1,0 +1,37 @@
+{
+  "name": "spotify-overlay",
+  "version": "1.0.0",
+  "description": "A personal stream overlay that displays your currently playing Spotify track.",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "spotify",
+    "overlay",
+    "twitch",
+    "streaming"
+  ],
+  "author": "RhinoFeeder",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RhinoFeeder/spotify-overlay.git"
+  },
+  "homepage": "https://github.com/RhinoFeeder/spotify-overlay#readme",
+  "bugs": {
+    "url": "https://github.com/RhinoFeeder/spotify-overlay/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "axios": "^1.7.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "open": "^11.0.0"
+  }
+}
