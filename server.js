@@ -166,7 +166,7 @@ app.get("/callback", async (req, res) => {
     }
 })
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
     console.log(`Spotify overlay server running at http://127.0.0.1:${port}`)
     if (process.env.REFRESH_TOKEN) {
         void pollSpotify()
@@ -184,5 +184,8 @@ app.listen(port, () => {
 
 process.on('SIGINT', () => {
     console.log('\nShutting down gracefully...')
-    process.exit(0)
+    server.close(() => {
+        console.log('Server closed')
+        process.exit(0)
+    })
 })
